@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cotton Health Dashboard | Real-time Monitoring</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #2E8B57;
+      --primary-dark: #1F6B45;
+      --secondary: #4A90E2;
+      --accent: #FF6B6B;
+      --light: #F8F9FA;
+      --dark: #2D3748;
+      --gray: #718096;
+      --light-gray: #E2E8F0;
+      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+      --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+      --radius: 12px;
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: var(--dark);
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* Header */
+    header {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 1rem 0;
+      position: fixed;
+      width: 100%;
+      top: 0;
+      z-index: 1000;
+      box-shadow: var(--shadow);
+    }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .logo i {
+      font-size: 2rem;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: var(--dark);
+      font-weight: 500;
+      transition: var(--transition);
+    }
+
+    .nav-links a:hover {
+      color: var(--primary);
+    }
+
+    .nav-links a.active {
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--dark);
+      background: var(--light-gray);
+      padding: 8px 16px;
+      border-radius: 50px;
+    }
+
+    /* Main Content */
+    .main-content {
+      margin-top: 80px;
+      padding: 30px 0;
+    }
+
+    .dashboard-header {
+      text-align: center;
+      margin-bottom: 40px;
+      color: white;
+    }
+
+    .dashboard-header h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .dashboard-header p {
+      font-size: 1.2rem;
+      opacity: 0.9;
+    }
+
+    /* Dashboard Grid */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+      margin-bottom: 40px;
+    }
+
+    /* Sensor Cards */
+    .sensor-card {
+      background: white;
+      border-radius: var(--radius);
+      padding: 25px;
+      box-shadow: var(--shadow);
+      transition: var(--transition);
+      border-left: 4px solid var(--primary);
+    }
+
+    .sensor-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .sensor-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .sensor-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: white;
+      margin-right: 15px;
+    }
+
+    .sensor-icon.moisture { background: var(--secondary); }
+    .sensor-icon.ph { background: var(--primary); }
+    .sensor-icon.temperature { background: var(--accent); }
+
+    .sensor-info h3 {
+      font-size: 1.1rem;
+      color: var(--gray);
+      margin-bottom: 4px;
+    }
+
+    .sensor-value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 10px;
+    }
+
+    .sensor-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    .status-optimal { background: #dcfce7; color: #166534; }
+    .status-warning { background: #fef3c7; color: #92400e; }
+    .status-critical { background: #fee2e2; color: #991b1b; }
+
+    .sensor-range {
+      color: var(--gray);
+      font-size: 0.9rem;
+      margin-top: 8px;
+    }
+
+    /* Progress Bar */
+    .progress-bar {
+      height: 8px;
+      background: var(--light-gray);
+      border-radius: 10px;
+      margin: 15px 0;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 10px;
+      transition: width 1s ease-in-out;
+    }
+
+    .progress-moisture { background: var(--secondary); }
+    .progress-ph { background: var(--primary); }
+    .progress-temperature { background: var(--accent); }
+
+    /* Disease Detection Section */
+    .disease-section {
+      background: white;
+      border-radius: var(--radius);
+      padding: 30px;
+      box-shadow: var(--shadow);
+      margin-top: 30px;
+    }
+
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: var(--dark);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-title i {
+      color: var(--primary);
+    }
+
+    .upload-area {
+      border: 3px dashed var(--light-gray);
+      border-radius: var(--radius);
+      padding: 40px;
+      text-align: center;
+      cursor: pointer;
+      transition: var(--transition);
+      background: var(--light);
+      margin-bottom: 20px;
+    }
+
+    .upload-area:hover {
+      border-color: var(--primary);
+      background: var(--light-gray);
+    }
+
+    .upload-icon {
+      font-size: 3rem;
+      color: var(--primary);
+      margin-bottom: 15px;
+    }
+
+    .btn {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 50px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    #preview {
+      max-width: 100%;
+      max-height: 300px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      display: none;
+      margin: 20px auto;
+    }
+
+    .results-section {
+      display: none;
+      margin-top: 25px;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    .results-section.active {
+      display: block;
+    }
+
+    .result-card {
+      background: var(--light);
+      border-radius: var(--radius);
+      padding: 25px;
+      border-left: 4px solid var(--primary);
+    }
+
+    .prediction-header {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .disease-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      color: white;
+    }
+
+    .disease-icon.healthy { background: var(--primary); }
+    .disease-icon.diseased { background: var(--accent); }
+
+    .confidence {
+      font-size: 2.2rem;
+      font-weight: 700;
+      margin: 15px 0;
+      color: var(--primary);
+    }
+
+    .confidence-bars {
+      margin: 20px 0;
+    }
+
+    .confidence-item {
+      margin: 12px 0;
+    }
+
+    .confidence-label {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    .confidence-bar {
+      height: 6px;
+      background: var(--light-gray);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .confidence-fill {
+      height: 100%;
+      border-radius: 10px;
+      transition: width 1s ease-in-out;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      display: none;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid var(--light-gray);
+      border-left: 4px solid var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .nav-links {
+        display: none;
+      }
+
+      .dashboard-header h1 {
+        font-size: 2rem;
+      }
+
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .sensor-card {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="container">
+      <nav>
+        <div class="logo">
+          <i class="fas fa-leaf"></i>
+          <span>TechSoil</span>
+        </div>
+        <div class="nav-links">
+          <a href="index.html">Home</a>
+          <a href="dashboard.html" class="active">Dashboard</a>
+          <!-- <a href="#features">Features</a>
+          <a href="#how-it-works">How It Works</a> -->
+          <a href="about.html">About</a>
+          <a href="#contact">Contact</a>
+        </div>
+        <a href="profile.html" class="user-info" style="text-decoration: none; color: inherit;">
+  <i class="fas fa-user"></i>
+  <span>Profile</span>
+</a>
+
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <div class="container">
+    <div class="main-content">
+      <div class="dashboard-header">
+        <h1><i class="fas fa-tachometer-alt"></i> Dashboard</h1>
+        <p>Monitor your cotton crop health in real-time</p>
+      </div>
+
+      <!-- Sensor Cards Grid -->
+      <div class="dashboard-grid">
+        <!-- Soil Moisture Card -->
+        <div class="sensor-card">
+          <div class="sensor-header">
+            <div class="sensor-icon moisture">
+              <i class="fas fa-tint"></i>
+            </div>
+            <div class="sensor-info">
+              <h3>Soil Moisture</h3>
+              <div class="sensor-value" id="moistureValue">65%</div>
+              <span class="sensor-status status-optimal">
+                <i class="fas fa-check-circle"></i>
+                Optimal
+              </span>
+            </div>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill progress-moisture" style="width: 65%"></div>
+          </div>
+          <div class="sensor-range">Optimal range: 40-80%</div>
+        </div>
+
+        <!-- pH Level Card -->
+        <div class="sensor-card">
+          <div class="sensor-header">
+            <div class="sensor-icon ph">
+              <i class="fas fa-flask"></i>
+            </div>
+            <div class="sensor-info">
+              <h3>Soil pH Level</h3>
+              <div class="sensor-value" id="phValue">6.8</div>
+              <span class="sensor-status status-optimal">
+                <i class="fas fa-check-circle"></i>
+                Optimal
+              </span>
+            </div>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill progress-ph" style="width: 72%"></div>
+          </div>
+          <div class="sensor-range">Optimal range: 6.0-7.5</div>
+        </div>
+
+        <!-- Temperature Card -->
+        <div class="sensor-card">
+          <div class="sensor-header">
+            <div class="sensor-icon temperature">
+              <i class="fas fa-thermometer-half"></i>
+            </div>
+            <div class="sensor-info">
+              <h3>Temperature</h3>
+              <div class="sensor-value" id="temperatureValue"></div>
+              <span class="sensor-status status-optimal">
+                <i class="fas fa-check-circle"></i>
+                Optimal
+              </span>
+            </div>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill progress-temperature" style="width: 70%"></div>
+          </div>
+          <div class="sensor-range">Optimal range: 20-35°C</div>
+        </div>
+      </div>
+
+      <!-- Disease Detection Section -->
+      <div class="disease-section">
+        <h2 class="section-title">
+          <i class="fas fa-microscope"></i>
+          Cotton Leaf Disease Detection
+        </h2>
+        <p style="color: var(--gray); margin-bottom: 20px;">
+          Upload a cotton leaf image for AI-powered disease detection
+        </p>
+
+        <div class="upload-area" id="uploadArea">
+          <div class="upload-icon">
+            <i class="fas fa-cloud-upload-alt"></i>
+          </div>
+          <h3>Choose Image</h3>
+          <p style="color: var(--gray); margin: 10px 0;">Drag & drop or click to upload</p>
+          <input type="file" id="fileInput" accept="image/*" hidden>
+          <button class="btn" onclick="document.getElementById('fileInput').click()">
+            <i class="fas fa-folder-open"></i>
+            Choose File
+          </button>
+        </div>
+
+        <!-- Image Preview -->
+        <div style="text-align: center;">
+          <img id="preview" alt="Image preview">
+        </div>
+
+        <!-- Analyze Button -->
+        <div style="text-align: center; margin: 20px 0;">
+          <button class="btn" id="analyzeBtn" disabled>
+            <i class="fas fa-search"></i>
+            Analyze Image
+          </button>
+        </div>
+
+        <!-- Loading State -->
+        <div class="loading" id="loading">
+          <div class="spinner"></div>
+          <h3>Analyzing Image...</h3>
+          <p>Our AI is examining your cotton leaf for diseases</p>
+        </div>
+
+        <!-- Results Section -->
+        <div class="results-section" id="resultsSection">
+          <div class="result-card">
+            <div class="prediction-header">
+              <div class="disease-icon" id="diseaseIcon">
+                <i class="fas fa-leaf"></i>
+              </div>
+              <div>
+                <h3 id="predictionTitle">Prediction Result</h3>
+                <p id="predictionSubtitle">AI Analysis Complete</p>
+              </div>
+            </div>
+
+            <div class="confidence" id="confidenceValue">0%</div>
+            <p style="color: var(--gray);">Confidence Level</p>
+
+            <div class="confidence-bars" id="confidenceBars">
+              <!-- Confidence bars will be inserted here -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // DOM Elements
+    const fileInput = document.getElementById('fileInput');
+    const uploadArea = document.getElementById('uploadArea');
+    const preview = document.getElementById('preview');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const loading = document.getElementById('loading');
+    const resultsSection = document.getElementById('resultsSection');
+    const confidenceValue = document.getElementById('confidenceValue');
+    const confidenceBars = document.getElementById('confidenceBars');
+    const diseaseIcon = document.getElementById('diseaseIcon');
+    const predictionTitle = document.getElementById('predictionTitle');
+    const predictionSubtitle = document.getElementById('predictionSubtitle');
+
+    // Sensor data elements
+    const moistureValue = document.getElementById('moistureValue');
+    const phValue = document.getElementById('phValue');
+    const temperatureValue = document.getElementById('temperatureValue');
+   
+    //temperatureValue 
+  async function fetchWeather() {
+  const lat = 18.5204; // Pune latitude
+  const lon = 73.8567; // Pune longitude
+
+  const url = `https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${lon}`;
+  const response = await fetch(url, {
+    headers: { "User-Agent": "WeatherDashboard/1.0" } // required by MET.no
+  });
+  const data = await response.json();
+
+  const temp = data.properties.timeseries[0].data.instant.details.air_temperature;
+  document.getElementById("temperatureValue").innerText = `${temp}°C`;
+}
+fetchWeather();
+
+
+// Disease information
+    const diseaseDatabase = {
+      'bacterial_blight': {
+        name: 'Bacterial Blight',
+        icon: 'fas fa-bacteria',
+        color: 'var(--accent)',
+        description: 'A bacterial infection causing water-soaked lesions on leaves.'
+      },
+      'curl_virus': {
+        name: 'Curl Virus',
+        icon: 'fas fa-virus',
+        color: 'var(--accent)',
+        description: 'Viral disease causing leaf curling and stunted growth.'
+      },
+      'fussarium_wilt': {
+        name: 'Fusarium Wilt',
+        icon: 'fas fa-skull-crossbones',
+        color: 'var(--dark)',
+        description: 'Fungal wilt disease affecting vascular system.'
+      },
+      'verticillium_wilt': {
+        name: 'verticillium wilt',
+        icon: 'fas fa-bacteria',
+        color: 'var(--accent)',
+        description: 'A fungel infection caused by these fungi living in the soil.'
+      },
+      'healthy': {
+        name: 'Healthy Plant',
+        icon: 'fas fa-heart',
+        color: 'var(--primary)',
+        description: 'Your cotton plant appears to be in good health!'
+      }
+    };
+
+    // File upload handling
+    uploadArea.addEventListener('click', () => fileInput.click());
+    
+    uploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadArea.style.borderColor = 'var(--primary)';
+      uploadArea.style.background = 'var(--light-gray)';
+    });
+    
+    uploadArea.addEventListener('dragleave', () => {
+      uploadArea.style.borderColor = 'var(--light-gray)';
+      uploadArea.style.background = 'var(--light)';
+    });
+    
+    uploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadArea.style.borderColor = 'var(--light-gray)';
+      uploadArea.style.background = 'var(--light)';
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        handleFileSelection(files[0]);
+      }
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length > 0) {
+        handleFileSelection(e.target.files[0]);
+      }
+    });
+
+    function handleFileSelection(file) {
+      if (!file.type.match('image.*')) {
+        alert('Please select an image file (JPG, PNG, JPEG)');
+        return;
+      }
+
+      preview.src = URL.createObjectURL(file);
+      preview.style.display = 'block';
+      analyzeBtn.disabled = false;
+      resultsSection.classList.remove('active');
+    }
+
+    // Analyze button handler
+    analyzeBtn.addEventListener('click', async () => {
+      const file = fileInput.files[0];
+      if (!file) return;
+
+      // Show loading state
+      loading.style.display = 'block';
+      resultsSection.classList.remove('active');
+      analyzeBtn.disabled = true;
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const response = await fetch('http://127.0.0.1:5000/predict', {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await response.json();
+        loading.style.display = 'none';
+        analyzeBtn.disabled = false;
+
+        if (data.predicted_class) {
+          displayResults(data);
+        } else {
+          alert(`Error: ${data.error}`);
+        }
+      } catch (err) {
+        loading.style.display = 'none';
+        analyzeBtn.disabled = false;
+        alert('Failed to connect to server. Please check if Flask is running.');
+        console.error('Error:', err);
+      }
+    });
+
+    function displayResults(data) {
+      const disease = diseaseDatabase[data.predicted_class];
+      
+      // Update main prediction
+      predictionTitle.textContent = disease.name;
+      predictionSubtitle.textContent = disease.description;
+      confidenceValue.textContent = `${data.confidence}%`;
+      confidenceValue.style.color = disease.color;
+      
+      // Update disease icon
+      diseaseIcon.className = 'disease-icon';
+      diseaseIcon.classList.add(data.predicted_class === 'healthy' ? 'healthy' : 'diseased');
+      diseaseIcon.innerHTML = `<i class="${disease.icon}"></i>`;
+      diseaseIcon.style.background = disease.color;
+
+      // Update confidence bars
+      confidenceBars.innerHTML = '';
+      if (data.all_predictions) {
+        Object.entries(data.all_predictions).forEach(([className, confidence]) => {
+          const diseaseInfo = diseaseDatabase[className];
+          const isActive = className === data.predicted_class;
+          
+          const barHTML = `
+            <div class="confidence-item">
+              <div class="confidence-label">
+                <span>${diseaseInfo.name}</span>
+                <span>${confidence}%</span>
+              </div>
+              <div class="confidence-bar">
+                <div class="confidence-fill" 
+                     style="width: ${confidence}%; background: ${isActive ? diseaseInfo.color : 'var(--gray)'}">
+                </div>
+              </div>
+            </div>
+          `;
+          confidenceBars.innerHTML += barHTML;
+        });
+      }
+
+      // Show results section
+      resultsSection.classList.add('active');
+    }
+
+    // Simulate IoT data updates (replace with real IoT data later)
+    function updateSensorData() {
+      // Simulate slight variations in sensor readings
+      const moisture = 65 + (Math.random() * 4 - 2); // 63-67%
+      const ph = 6.8 + (Math.random() * 0.2 - 0.1); // 6.7-6.9
+      const temperature = 28 + (Math.random() * 2 - 1); // 27-29°C
+
+      moistureValue.textContent = `${Math.round(moisture)}%`;
+      phValue.textContent = ph.toFixed(1);
+      // temperatureValue.textContent = `${Math.round(temperature)}°C`;
+
+      // Update progress bars
+      document.querySelector('.progress-moisture').style.width = `${moisture}%`;
+      document.querySelector('.progress-ph').style.width = `${(ph - 4) * 20}%`; // Scale pH 4-9 to 0-100%
+      // document.querySelector('.progress-temperature').style.width = `${((temperature - 15) / 25) * 100}%`; // Scale 15-40°C to 0-100%
+    }
+
+    // Update sensor data every 5 seconds
+    setInterval(updateSensorData, 8000);
+
+    // Initial update
+    updateSensorData();
+  </script>
+</body>
+</html>
